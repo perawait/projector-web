@@ -3,13 +3,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-mali-fallback: "Mali", sans-serif;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-mali);
+  --font-mono: var(--font-mali);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,8 +20,58 @@
   }
 }
 
+html,
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-mali), var(--font-mali-fallback);
+  font-synthesis: none;
+}
+
+body *,
+body *::before,
+body *::after {
+  font-family: inherit;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes messageFloat {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  20% {
+    transform: translate3d(calc(var(--float-x, 4px) * 0.85), calc(var(--float-y, -3px) * 0.55), 0);
+  }
+  40% {
+    transform: translate3d(calc(var(--float-x, 4px) * 0.35), calc(var(--float-y, -3px) * 1.1), 0);
+  }
+  60% {
+    transform: translate3d(calc(var(--float-x, 4px) * -0.55), calc(var(--float-y, -3px) * 0.15), 0);
+  }
+  80% {
+    transform: translate3d(calc(var(--float-x, 4px) * -0.2), calc(var(--float-y, -3px) * -0.9), 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .animate-messageFloat {
+    animation: messageFloat var(--float-duration, 7s) ease-in-out var(--float-delay, 0s) infinite;
+  }
 }
