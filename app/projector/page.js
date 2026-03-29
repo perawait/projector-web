@@ -152,6 +152,7 @@ export default function ProjectorPage() {
                 delay: `${(-Math.random() * 4).toFixed(2)}s`,
               },
               baseOpacity: 0.78 + Math.random() * 0.18,
+              isEntering: true,
               isExiting: false,
               exitStartTime: null,
             },
@@ -237,6 +238,28 @@ export default function ProjectorPage() {
   }, []);
 
   useEffect(() => {
+    const enteringIds = messages
+      .filter((message) => message.isEntering)
+      .map((message) => message.id);
+
+    if (enteringIds.length === 0) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setMessages((currentMessages) =>
+        currentMessages.map((message) => (
+          enteringIds.includes(message.id)
+            ? { ...message, isEntering: false }
+            : message
+        ))
+      );
+    }, 30);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [messages]);
+
+  useEffect(() => {
     const expiringIds = [...expiringMessageIdsRef.current];
 
     if (expiringIds.length === 0) {
@@ -285,6 +308,8 @@ export default function ProjectorPage() {
           delay: "0s",
         };
         const baseOpacity = typeof message.baseOpacity === "number" ? message.baseOpacity : 0.88;
+        const isEntering = Boolean(message.isEntering);
+        const visibleOpacity = message.isExiting ? opacity * baseOpacity : baseOpacity;
 
         return (
           <div
@@ -294,16 +319,20 @@ export default function ProjectorPage() {
               top,
               left,
               maxWidth: box.width,
-              opacity: opacity * baseOpacity,
-              transition: "opacity 0.25s linear",
+              opacity: isEntering ? 0 : visibleOpacity,
+              transform: isEntering ? "translateY(18px) scale(0.985)" : "translateY(0) scale(1)",
+              filter: isEntering ? "blur(3px)" : "blur(0px)",
+              transition: "opacity 0.85s ease, transform 0.85s ease, filter 0.85s ease",
               "--float-x": motion.x,
               "--float-y": motion.y,
               "--float-duration": motion.duration,
               "--float-delay": motion.delay,
             }}
-            className="pointer-events-none px-4 py-2 text-6xl leading-tight text-black animate-fadeIn animate-messageFloat"
+            className="pointer-events-none"
           >
-            {message.text}
+            <div className="px-4 py-2 text-6xl leading-tight text-black animate-messageFloat">
+              {message.text}
+            </div>
           </div>
         );
       })}
